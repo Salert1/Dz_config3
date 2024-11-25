@@ -1,0 +1,99 @@
+Пример 1: Конфигурация веб-сервера
+Вход (TOML):
+toml
+Копировать код
+# Конфигурация веб-сервера
+[server]
+host = "localhost"
+port = 8080
+
+# Объявление констант
+var max_clients 100
+var timeout 30
+
+# Расчёт параметров
+total_time = $max_clients * timeout$
+result = $max(timeout, 60)$
+
+# Поддерживаемые протоколы
+protocols = ["http", "https"]
+Вывод:
+plaintext
+Копировать код
+\ Конфигурация веб-сервера
+server struct {
+  host = "localhost",
+  port = 8080,
+}
+
+var max_clients 100
+var timeout 30
+
+total_time = 3000
+result = 60
+
+protocols [http; https]
+Пример 2: Конфигурация системы задач
+Вход (TOML):
+toml
+Копировать код
+# Список задач
+[tasks]
+task1 = "Запустить сервер"
+task2 = "Обновить базу данных"
+task3 = "Настроить резервное копирование"
+
+# Объявление констант
+var task_count 3
+var max_duration 120
+
+# Вычисления времени
+average_time_per_task = $max_duration / task_count$
+remaining_time = $max_duration - (task_count * 30)$
+Вывод:
+plaintext
+Копировать код
+\ Список задач
+tasks struct {
+  task1 = "Запустить сервер",
+  task2 = "Обновить базу данных",
+  task3 = "Настроить резервное копирование",
+}
+
+var task_count 3
+var max_duration 120
+
+average_time_per_task = 40.0
+remaining_time = 30
+Пример 3: Конфигурация вычислительного кластера
+Вход (TOML):
+toml
+Копировать код
+# Узлы кластера
+[nodes]
+node1 = "192.168.1.1"
+node2 = "192.168.1.2"
+node3 = "192.168.1.3"
+
+# Объявление констант
+var node_count 3
+var base_performance 200
+
+# Вычисление общей производительности
+total_performance = $node_count * base_performance$
+peak_performance = $max(total_performance, 1000)$
+Вывод:
+plaintext
+Копировать код
+\ Узлы кластера
+nodes struct {
+  node1 = "192.168.1.1",
+  node2 = "192.168.1.2",
+  node3 = "192.168.1.3",
+}
+
+var node_count 3
+var base_performance 200
+
+total_performance = 600
+peak_performance = 1000
