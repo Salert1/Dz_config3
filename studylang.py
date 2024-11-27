@@ -1,3 +1,5 @@
+from types import NoneType
+import sys
 import toml
 import re
 
@@ -23,10 +25,11 @@ def evaluate_expression(expression, constants):
     # Разрешаем только определённые безопасные функции и операции
     allowed_names = {
         "max": max,
-        "abs": abs
+        "abs": abs,
+        **constants
     }
     allowed_operators = "+-*/()"
-    allowed_characters = "0123456789. " + allowed_operators + "".join(constants.keys())
+    allowed_characters = "0123456789. " + allowed_operators + "".join(constants.keys()) + "abs" + "max"
 
     # Проверяем, чтобы в выражении были только разрешённые символы
     if not all(char in allowed_characters for char in expression):
@@ -34,7 +37,7 @@ def evaluate_expression(expression, constants):
 
     # Вычисляем выражение
     try:
-        result = eval(expression, {"__builtins__": None}, allowed_names)
+        result = eval(expression, allowed_names)
         return result
     except Exception as e:
         raise ValueError(f"Ошибка вычисления выражения '{expression}': {e}")
@@ -65,15 +68,21 @@ def transform_to_custom_format(parsed_data):
 
         # Обработка объявления констант
         elif isinstance(value, str) and value.startswith("var "):
-            _, const_name, const_value = value.split()
-            constants[const_name] = eval(const_value)
-            output.append(f"var {const_name} {constants[const_name]}")
+            try:
+                _, const_name, const_value = value.split()
+                constants[const_name] = eval(const_value)
+                output.append(f"var {const_name} {constants[const_name]}")
+            except ValueError:
+                raise SyntaxError(f"Ошибка: некорректное объявление константы '{value}'")
 
         # Обработка выражений
         elif isinstance(value, str) and re.match(r"^\$.*\$$", value):
             expression = value.strip("$")
-            result = evaluate_expression(expression, constants)
-            output.append(f"{key} = {result}")
+            try:
+                result = evaluate_expression(expression, constants)
+                output.append(f"{key} = {result}")
+            except ValueError as e:
+                output.append(f"Ошибка вычисления выражения '{expression}': {e}")
 
         # Преобразование простых значений
         elif isinstance(value, (int, float, str)):
@@ -84,25 +93,33 @@ def transform_to_custom_format(parsed_data):
 
 def process_input(input_text):
     """
-    Основная функция для чтения входного текста и преобразования его в выходной формат.
-    """
-    # Парсим входной TOML текст
+    # Основная функция для чтения входного текста и преобразования его в выходной формат.
+    # """
+    #  Парсим входной TOML текст
     parsed_data = parse_toml(input_text)
-
+    print(parsed_data)
     # Преобразуем в учебный формат
     output_text = transform_to_custom_format(parsed_data)
     return output_text
 
-
 def main():
-    """
-    Главная функция для работы программы.
-    Принимает данные через стандартный ввод и выводит результат на стандартный вывод.
-    """
-    # Чтение всего ввода
-    input_text = input()  # Ввод TOML текста
-    result = process_input(input_text)
-    print(result)
+        """
+        Главная функция для работы программы.
+        Принимает данные через стандартный ввод и выводит результат на стандартный вывод.
+        """
+        # Чтение всего ввода (многострочного текста)
+        input_text = sys.stdin.read()
+
+        # Вывод входного текста (опционально, для отладки)
+        print("Входной текст:")
+        print(input_text)
+
+        # Обработка введённого текста
+        result = process_input(input_text)
+
+        # Вывод результата
+        print("Результат:")
+        print(result)
 
 
 if __name__ == "__main__":
